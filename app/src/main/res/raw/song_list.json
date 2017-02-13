@@ -1,0 +1,19 @@
+{
+  "statusCode": 200,
+  "data": [
+    {
+      "genre": "Classics",
+      "album": "Chamber music for strings",
+      "author": "Beethoven",
+      "title": "Adagio",
+      "url": "http://www.scientificinvesting.eu/a/Beethoven%20-%20Trio%20for%20strings%20n.1%20Op.9%20in%20G%20-%201%20Adagio.mp3"
+    },
+    {
+      "genre": "Classics",
+      "album": "Chamber music for strings",
+      "author": "Beethoven",
+      "title": "Presto",
+      "url": "http://www.scientificinvesting.eu/a/Beethoven%20-%20Trio%20for%20strings%20n.1%20Op.9%20in%20G%20-%204%20Presto.mp3"
+    }
+  ]
+}

@@ -1,17 +1,43 @@
 package com.bonrita.mediaplayerdemo;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
+
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
     public static final String Broadcast_PLAY_NEW_AUDIO = "com.bonrita.mediaplayerdemo.PlayNewAudio";
 
     boolean serviceBound = false;
+
+    private static final String SOURCE_URL = "http://10.0.2.2:8080/drupal8/api/v1/song_list?_format=json";
+
+    ArrayList<Audio> audioList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,8 +48,15 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+
+        // Load mock data.
+        loadMockData();
+
+        initRecyclerView();
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(fabOnclickListener);
+
 
     }
 
@@ -33,5 +66,110 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Fab btn clicked", Toast.LENGTH_LONG).show();
         }
     };
+
+    private void initRecyclerView() {
+        if (audioList.size() > 0) {
+            RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
+
+
+
+//            Log.d("BONRI", "TEST TEST");
+        }
+    }
+
+    private void loadRemoteData() {
+        final ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Loading data ....");
+        progressDialog.show();
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, SOURCE_URL, null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                progressDialog.dismiss();
+
+                try {
+                    String statusCode = response.getString("statusCode");
+                    Log.d("statusCode", statusCode);
+
+                } catch (JSONException e) {
+                    progressDialog.dismiss();
+                    e.printStackTrace();
+                }
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                progressDialog.dismiss();
+                error.printStackTrace();
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+                params.put("Content-Type", "application/json");
+                params.put("X-Force-Status-Code-200", "1");
+                return params;
+            }
+        };
+
+        // Creating a request queue
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+        // Adding our request to the que
+        requestQueue.add(jsonObjectRequest);
+
+    }
+
+    /**
+     * Get data from a text resource File that contains json data.
+     */
+    protected void loadMockData() {
+
+        int ctr;
+        InputStream inputStream = getResources().openRawResource(R.raw.song_list);
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+        try {
+            ctr = inputStream.read();
+            while (ctr != -1) {
+                byteArrayOutputStream.write(ctr);
+                ctr = inputStream.read();
+            }
+            inputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Parse the data.
+        try {
+            JSONObject jObject = new JSONObject(byteArrayOutputStream.toString());
+
+            String status_code = jObject.getString("statusCode");
+
+            if (status_code.equalsIgnoreCase("200")) {
+                JSONArray jArray = jObject.getJSONArray("data");
+
+                audioList = new ArrayList<>();
+
+                for (int i = 0; i < jArray.length(); i++) {
+                    JSONObject song = jArray.getJSONObject(i);
+
+                    String genre = song.getString("genre");
+                    String album = song.getString("album");
+                    String author = song.getString("author");
+                    String title = song.getString("title");
+                    String url = song.getString("url");
+
+                    Audio audio = new Audio(genre, album, author, title, url);
+
+                    // Save to audioList.
+                    audioList.add(audio);
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 
 }
