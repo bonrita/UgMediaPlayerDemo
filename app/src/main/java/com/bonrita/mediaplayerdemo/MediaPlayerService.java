@@ -26,6 +26,16 @@ public class MediaPlayerService extends Service {
         registerActivityBroadcastPlayNewAudio();
     }
 
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        // This method is called by android when an activity request this service to be started.
+        //Get data from shared preferences.
+        MediaStorageUtility mediaStorage = new MediaStorageUtility(getApplicationContext());
+        audioList = mediaStorage.loadAudioList();
+
+        return super.onStartCommand(intent, flags, startId);
+    }
+
     private BroadcastReceiver playNewAudio = new BroadcastReceiver() {
 
         @Override

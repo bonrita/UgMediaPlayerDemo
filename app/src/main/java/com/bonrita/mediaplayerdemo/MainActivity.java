@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.PersistableBundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -75,6 +76,18 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Fab btn clicked", Toast.LENGTH_LONG).show();
         }
     };
+
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+        outState.putBoolean("serviceStatus", serviceBound);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        serviceBound = savedInstanceState.getBoolean("serviceStatus");
+    }
 
     private void initRecyclerView() {
         if (audioList.size() > 0) {
@@ -233,4 +246,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(serviceBound){
+            unbindService(serviceConnection);
+
+            // Stop player.
+            servicePlayer.stopSelf();
+        }
+    }
 }
