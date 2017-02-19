@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -70,8 +71,9 @@ public class MainActivity extends AppCompatActivity {
     private void initRecyclerView() {
         if (audioList.size() > 0) {
             RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
-
-
+            MediaRecyclerViewAdapter adapter = new MediaRecyclerViewAdapter(audioList, getApplication());
+            recyclerView.setAdapter(adapter);
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
 //            Log.d("BONRI", "TEST TEST");
         }
