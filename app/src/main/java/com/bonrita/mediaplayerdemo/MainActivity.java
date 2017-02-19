@@ -74,7 +74,13 @@ public class MainActivity extends AppCompatActivity {
             MediaRecyclerViewAdapter adapter = new MediaRecyclerViewAdapter(audioList, getApplication());
             recyclerView.setAdapter(adapter);
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            recyclerView.addOnItemTouchListener(new AudioTouchListener(this, new AudioTouchListener.onItemClickListener() {
 
+                @Override
+                public void onClick(View view, int position) {
+                    Toast.makeText(getApplicationContext(), "Clicked me " + audioList.get(position).getTitle(), Toast.LENGTH_LONG).show();
+                }
+            }));
 //            Log.d("BONRI", "TEST TEST");
         }
     }
