@@ -34,4 +34,9 @@ public class MediaStorageUtility {
         editor.putInt("audioIndex", audioIndex);
         editor.apply();
     }
+
+    public int getCurrentAudioPosition() {
+        preferences = context.getSharedPreferences(STORAGE, Context.MODE_PRIVATE);
+        return preferences.getInt("audioIndex", -1);
+    }
 }

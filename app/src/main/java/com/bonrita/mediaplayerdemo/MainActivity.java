@@ -86,7 +86,6 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onClick(View view, int position) {
-                    Toast.makeText(getApplicationContext(), "Clicked me " + audioList.get(position).getTitle(), Toast.LENGTH_LONG).show();
                     playAudio(position);
                 }
             }));
@@ -115,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
      * @param audioIndex The index of the audio to play.
      */
     private void playAudio(int audioIndex) {
-
+        Toast.makeText(getApplicationContext(), "Clicked me " + audioList.get(audioIndex).getTitle(), Toast.LENGTH_LONG).show();
         // Check if the service is active.
         if (!serviceBound) {
             // Store a serializable audioList to shared preferences.
