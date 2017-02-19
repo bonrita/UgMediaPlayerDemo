@@ -1,8 +1,12 @@
 package com.bonrita.mediaplayerdemo;
 
 import android.app.ProgressDialog;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -40,6 +44,9 @@ public class MainActivity extends AppCompatActivity {
     private static final String SOURCE_URL = "http://10.0.2.2:8080/drupal8/api/v1/song_list?_format=json";
 
     ArrayList<Audio> audioList;
+
+    // Service player that houses all functionality to play music.
+    private MediaPlayerService servicePlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +94,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Bind this activity (client) to the MediaPlayer service.
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            MediaPlayerService.MediaPlayerBinder binder = (MediaPlayerService.MediaPlayerBinder) service;
+            servicePlayer = binder.getService();
+            serviceBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            serviceBound = false;
+        }
+    };
+
     /**
      * Play an audio at a given index in the audio list.
      *
@@ -103,9 +125,16 @@ public class MainActivity extends AppCompatActivity {
 
             Intent playerIntent = new Intent(this, MediaPlayerService.class);
             startService(playerIntent);
+            bindService(playerIntent, serviceConnection, Context.BIND_AUTO_CREATE);
 
         } else {
+            // Store the new audioIndex to SharedPreferences
+            MediaStorageUtility storage = new MediaStorageUtility(getApplicationContext());
+            storage.storeAudioPosition(audioIndex);
 
+            // If service is active send a broadcast "PLAY_NEW_AUDIO" to the MediaPlayerService
+            Intent broadCastIntent = new Intent(Broadcast_PLAY_NEW_AUDIO);
+            sendBroadcast(broadCastIntent);
         }
 
     }

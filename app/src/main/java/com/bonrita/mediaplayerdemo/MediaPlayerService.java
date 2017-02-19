@@ -16,7 +16,7 @@ public class MediaPlayerService extends Service {
         return iBinder;
     }
 
-    private class MediaPlayerBinder extends Binder {
+    public class MediaPlayerBinder extends Binder {
         /**
          * Return the MediaPlayerService so that clients can access it's methods.
          *
