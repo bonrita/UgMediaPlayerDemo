@@ -13,7 +13,7 @@ import android.os.IBinder;
 
 import java.util.ArrayList;
 
-public class MediaPlayerService extends Service {
+public class MediaPlayerService extends Service implements MediaPlayer.OnCompletionListener {
 
     // The binder to be given to clients.
     private final IBinder iBinder = new MediaPlayerBinder();
@@ -66,6 +66,10 @@ public class MediaPlayerService extends Service {
         if (mediaPlayer == null) {
             mediaPlayer = new MediaPlayer();
         }
+
+        // Set up the MediaPlayer event listeners.
+        mediaPlayer.setOnCompletionListener(this);
+
     }
 
     /**
@@ -91,6 +95,15 @@ public class MediaPlayerService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return iBinder;
+    }
+
+    @Override
+    public void onCompletion(MediaPlayer mp) {
+        // Make sure the current audio that is playing is completely stopped form playing.
+        stopCurrentAudioPlay();
+
+        // Stop this service.
+        stopSelf();
     }
 
     public class MediaPlayerBinder extends Binder {
