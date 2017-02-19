@@ -1,6 +1,7 @@
 package com.bonrita.mediaplayerdemo;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -99,7 +100,9 @@ public class MainActivity extends AppCompatActivity {
             MediaStorageUtility storage = new MediaStorageUtility(getApplicationContext());
             storage.storeAudioList(audioList);
             storage.storeAudioPosition(audioIndex);
-            
+
+            Intent playerIntent = new Intent(this, MediaPlayerService.class);
+            startService(playerIntent);
 
         } else {
 
