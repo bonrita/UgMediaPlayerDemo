@@ -79,10 +79,32 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view, int position) {
                     Toast.makeText(getApplicationContext(), "Clicked me " + audioList.get(position).getTitle(), Toast.LENGTH_LONG).show();
+                    playAudio(position);
                 }
             }));
 //            Log.d("BONRI", "TEST TEST");
         }
+    }
+
+    /**
+     * Play an audio at a given index in the audio list.
+     *
+     * @param audioIndex The index of the audio to play.
+     */
+    private void playAudio(int audioIndex) {
+
+        // Check if the service is active.
+        if (!serviceBound) {
+            // Store a serializable audioList to shared preferences.
+            MediaStorageUtility storage = new MediaStorageUtility(getApplicationContext());
+            storage.storeAudioList(audioList);
+            storage.storeAudioPosition(audioIndex);
+            
+
+        } else {
+
+        }
+
     }
 
     private void loadRemoteData() {
