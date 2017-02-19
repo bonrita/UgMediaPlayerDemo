@@ -6,6 +6,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.media.MediaPlayer;
+import android.media.session.MediaSessionManager;
 import android.os.Binder;
 import android.os.IBinder;
 
@@ -18,6 +20,8 @@ public class MediaPlayerService extends Service {
     private int currentAudioPosition = -1;
     private ArrayList<Audio> audioList;
     private Audio currentAudio;
+    private MediaPlayer mediaPlayer;
+    private MediaSessionManager mediaSessionManager;
 
     @Override
     public void onCreate() {
@@ -28,10 +32,14 @@ public class MediaPlayerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        // This method is called by android when an activity request this service to be started.
-        //Get data from shared preferences.
+        // This method is called by android when an activity requests this service to be started.
+        //Get audio list data from shared preferences.
         MediaStorageUtility mediaStorage = new MediaStorageUtility(getApplicationContext());
         audioList = mediaStorage.loadAudioList();
+
+        if(mediaSessionManager == null) {
+            initMediaPlayer();
+        }
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -49,13 +57,26 @@ public class MediaPlayerService extends Service {
 
             // Reset the media player to play the new audio.
             stopCurrentAudioPlay();
+            mediaPlayer.reset();
+            initMediaPlayer();
         }
     };
+
+    private void initMediaPlayer() {
+        if (mediaPlayer == null) {
+            mediaPlayer = new MediaPlayer();
+        }
+    }
 
     /**
      * Stop the current audio that is playing from playing.
      */
     private void stopCurrentAudioPlay() {
+        if (mediaPlayer == null) {
+            return;
+        } else if (mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
+        }
     }
 
     /**
