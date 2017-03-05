@@ -11,6 +11,8 @@ import android.media.MediaPlayer;
 import android.media.session.MediaSessionManager;
 import android.os.Binder;
 import android.os.IBinder;
+import android.util.Log;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,11 +21,20 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     // The binder to be given to clients.
     private final IBinder iBinder = new MediaPlayerBinder();
-    private int currentAudioPosition = -1;
+    // The audio index from the audio list.
+    private int audioIndex = -1;
+    // Truck the current audio index that is playing.
+    private int currentPlayingAudioIndex = -1;
+    // The list holding the songs to play.
     private ArrayList<Audio> audioList;
+    // The song to play.
     private Audio currentAudio;
     private MediaPlayer mediaPlayer;
     private MediaSessionManager mediaSessionManager;
+    // Store current audio position to resume from when audio is paused.
+    private int resumeAudioPosition;
+    // False if not paused and true when paused.
+    private boolean audioPaused;
 
     @Override
     public void onCreate() {
@@ -34,19 +45,29 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d("====>>> Function called", "onStartCommand");
         // This method is called by android when an activity requests this service to be started.
         //Get audio list data from shared preferences.
         MediaStorageUtility mediaStorage = new MediaStorageUtility(getApplicationContext());
         audioList = mediaStorage.loadAudioList();
-        currentAudioPosition = mediaStorage.getCurrentAudioPosition();
+        audioIndex = mediaStorage.getCurrentAudioPosition();
+        audioPaused = false;
 
-        if (currentAudioPosition != -1 && currentAudioPosition < audioList.size()) {
-            currentAudio = audioList.get(currentAudioPosition);
+        if (audioIndex != -1 && audioIndex < audioList.size() && currentPlayingAudioIndex == audioIndex) {
+            Toast.makeText(getApplicationContext(), "ONSTARTCOMMAND Same audio index already playing, pause audio", Toast.LENGTH_SHORT).show();
+        }
+
+        if (audioIndex != -1 && audioIndex < audioList.size()) {
+            currentAudio = audioList.get(audioIndex);
+            if (audioIndex != currentPlayingAudioIndex) {
+                currentPlayingAudioIndex = audioIndex;
+            }
         } else {
             stopSelf();
         }
 
         if (mediaSessionManager == null) {
+            Log.d("====>>> Function called", "onStartCommand : initMediaPlayer");
             initMediaPlayer();
         }
 
@@ -90,22 +111,65 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         }
     }
 
+    /**
+     * Pause audio when paused.
+     */
+    private void pauseAudio() {
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.pause();
+            resumeAudioPosition = mediaPlayer.getCurrentPosition();
+            audioPaused = true;
+        }
+    }
 
-    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+    /**
+     * Resume audio from the position it was paused.
+     */
+    private void resumeAudio() {
+        if (!mediaPlayer.isPlaying()) {
+            mediaPlayer.seekTo(resumeAudioPosition);
+            mediaPlayer.start();
+            audioPaused = false;
+        }
+    }
+
+    private BroadcastReceiver PlayAudioBroadcastReceiver = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            currentAudioPosition = new MediaStorageUtility(getApplicationContext()).getCurrentAudioPosition();
-            if (currentAudioPosition != -1 && currentAudioPosition < audioList.size()) {
-                currentAudio = audioList.get(currentAudioPosition);
-            } else {
-                stopSelf();
-            }
+            Log.d("====>>> Function called", "BroadcastReceiver:onReceive");
+            audioIndex = new MediaStorageUtility(getApplicationContext()).getCurrentAudioPosition();
 
-            // Reset the media player to play the new audio.
-            stopCurrentAudioPlay();
-            mediaPlayer.reset();
-            initMediaPlayer();
+            if (audioPaused && currentPlayingAudioIndex == audioIndex) {
+                Toast.makeText(getApplicationContext(), "BROADCAST Resume audio", Toast.LENGTH_SHORT).show();
+                // Resume playing the audio that was paused.
+                resumeAudio();
+            } else {
+
+                if (audioIndex != -1 && audioIndex < audioList.size() && currentPlayingAudioIndex == audioIndex && !audioPaused) {
+                    Toast.makeText(getApplicationContext(), "BROADCAST Pause audio", Toast.LENGTH_SHORT).show();
+                    pauseAudio();
+                } else {
+                    audioPaused = false;
+                    if (audioIndex != -1 && audioIndex < audioList.size()) {
+                        currentAudio = audioList.get(audioIndex);
+
+                        if (audioIndex != currentPlayingAudioIndex) {
+                            currentPlayingAudioIndex = audioIndex;
+                        }
+                    } else {
+                        stopSelf();
+                    }
+
+
+                    // Reset the media player to play the new audio.
+                    stopCurrentAudioPlay();
+                    mediaPlayer.reset();
+                    Toast.makeText(getApplicationContext(), "BROADCAST Play audio", Toast.LENGTH_SHORT).show();
+                    initMediaPlayer();
+                    Log.d("====>>> Function called", "BroadcastReceiver: onReceiver : initMediaPlayer");
+                }
+            }
         }
     };
 
@@ -115,7 +179,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
      */
     private void registerActivityBroadcastPlayNewAudio() {
         IntentFilter filter = new IntentFilter(MainActivity.Broadcast_PLAY_NEW_AUDIO);
-        registerReceiver(broadcastReceiver, filter);
+        registerReceiver(PlayAudioBroadcastReceiver, filter);
     }
 
     @Override

@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
                     playAudio(position);
                 }
             }));
-//            Log.d("BONRI", "TEST TEST");
+
         }
     }
 
@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
      * @param audioIndex The index of the audio to play.
      */
     private void playAudio(int audioIndex) {
-        Toast.makeText(getApplicationContext(), "Clicked me " + audioList.get(audioIndex).getTitle(), Toast.LENGTH_LONG).show();
+//        Toast.makeText(getApplicationContext(), "Clicked me " + audioList.get(audioIndex).getTitle(), Toast.LENGTH_LONG).show();
         // Check if the service is active.
         if (!serviceBound) {
             // Store a serializable audioList to shared preferences.
@@ -249,7 +249,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(serviceBound){
+        if (serviceBound) {
             unbindService(serviceConnection);
 
             // Stop player.
