@@ -124,26 +124,10 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view, int position, RecyclerView rv) {
 
-//                    viewHolder = (MediaRecyclerViewAdapter.MediaViewHolder) rv.findContainingViewHolder(view);
-//                    if (position == activePosition) {
-//
-////                        viewHolder.play_pause.setImageResource(R.drawable.ic_play_black_48dp);
-////                        viewHolder.title.setText(audioList.get(position).getTitle());
-////                        activePosition = -1;
-//                    } else {
-//                        if (activePosition < 0) {
-////                            viewHolder.play_pause.setImageResource(R.drawable.ic_pause);
-//                            activePosition = position;
-//                        } else {
-////                            viewHolder.play_pause.setImageResource(R.drawable.ic_play_black_48dp);
-////                            viewHolder.title.setText(audioList.get(position).getTitle());
-//                            activePosition = -1;
-//                        }
-                        activePosition = position;
-//                    }
+                    // Store current position.
+                    activePosition = position;
 
                     // When a new audio is playing. Turn the previous paused audio icon to play.
-                    // http://stackoverflow.com/questions/33176336/need-an-example-about-recyclerview-adapter-notifyitemchangedint-position-objec
                     if (lastPlayedAudioIndex > -1 && lastPlayedAudioIndex != position) {
                         AudioTrackingEvent audioTrackingEvent = new AudioTrackingEvent();
                         audioTrackingEvent.setStop(true);
@@ -153,7 +137,6 @@ public class MainActivity extends AppCompatActivity {
                     AudioTrackingEvent audioTrackingEvent = new AudioTrackingEvent();
                     audioTrackingEvent.setPlaying(true);
                     adapter.notifyItemChanged(position, audioTrackingEvent);
-
 
                     playAudio(position);
 
@@ -167,12 +150,12 @@ public class MainActivity extends AppCompatActivity {
     // This method will be called when a song is paused.
     @Subscribe
     public void onAudioTracking(AudioTrackingEvent event) {
-        Toast.makeText(getApplicationContext(), "Audio tracking event received "+Integer.toString(activePosition), Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), "Audio tracking event received " + Integer.toString(activePosition), Toast.LENGTH_SHORT).show();
         if (event.isPaused()) {
             adapter.notifyItemChanged(activePosition, event);
         }
 
-        if(event.isPlaying()) {
+        if (event.isPlaying()) {
             adapter.notifyItemChanged(activePosition, event);
         }
     }
