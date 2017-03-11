@@ -25,6 +25,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -49,6 +51,15 @@ public class MainActivity extends AppCompatActivity {
     // Service player that houses all functionality to play music.
     private MediaPlayerService servicePlayer;
 
+    private int activePosition;
+
+    private boolean paused = false;
+    private int lastPlayedAudioIndex = -1;
+
+    MediaRecyclerViewAdapter.MediaViewHolder viewHolder;
+
+    private MediaRecyclerViewAdapter adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        activePosition = -1;
 
         // Load mock data.
         loadMockData();
@@ -89,20 +101,79 @@ public class MainActivity extends AppCompatActivity {
         serviceBound = savedInstanceState.getBoolean("serviceStatus");
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
+
     private void initRecyclerView() {
         if (audioList.size() > 0) {
             RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
-            MediaRecyclerViewAdapter adapter = new MediaRecyclerViewAdapter(audioList, getApplication());
+            adapter = new MediaRecyclerViewAdapter(audioList, getApplication());
             recyclerView.setAdapter(adapter);
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
             recyclerView.addOnItemTouchListener(new AudioTouchListener(this, new AudioTouchListener.onItemClickListener() {
 
                 @Override
-                public void onClick(View view, int position) {
+                public void onClick(View view, int position, RecyclerView rv) {
+
+//                    viewHolder = (MediaRecyclerViewAdapter.MediaViewHolder) rv.findContainingViewHolder(view);
+//                    if (position == activePosition) {
+//
+////                        viewHolder.play_pause.setImageResource(R.drawable.ic_play_black_48dp);
+////                        viewHolder.title.setText(audioList.get(position).getTitle());
+////                        activePosition = -1;
+//                    } else {
+//                        if (activePosition < 0) {
+////                            viewHolder.play_pause.setImageResource(R.drawable.ic_pause);
+//                            activePosition = position;
+//                        } else {
+////                            viewHolder.play_pause.setImageResource(R.drawable.ic_play_black_48dp);
+////                            viewHolder.title.setText(audioList.get(position).getTitle());
+//                            activePosition = -1;
+//                        }
+                        activePosition = position;
+//                    }
+
+                    // When a new audio is playing. Turn the previous paused audio icon to play.
+                    // http://stackoverflow.com/questions/33176336/need-an-example-about-recyclerview-adapter-notifyitemchangedint-position-objec
+                    if (lastPlayedAudioIndex > -1 && lastPlayedAudioIndex != position) {
+                        AudioTrackingEvent audioTrackingEvent = new AudioTrackingEvent();
+                        audioTrackingEvent.setStop(true);
+                        adapter.notifyItemChanged(lastPlayedAudioIndex, audioTrackingEvent);
+                        Toast.makeText(getApplicationContext(), "Last played audio index: " + Integer.toString(lastPlayedAudioIndex), Toast.LENGTH_SHORT).show();
+                    }
+                    AudioTrackingEvent audioTrackingEvent = new AudioTrackingEvent();
+                    audioTrackingEvent.setPlaying(true);
+                    adapter.notifyItemChanged(position, audioTrackingEvent);
+
+
                     playAudio(position);
+
+
                 }
             }));
 
+        }
+    }
+
+    // This method will be called when a song is paused.
+    @Subscribe
+    public void onAudioTracking(AudioTrackingEvent event) {
+        Toast.makeText(getApplicationContext(), "Audio tracking event received "+Integer.toString(activePosition), Toast.LENGTH_SHORT).show();
+        if (event.isPaused()) {
+            adapter.notifyItemChanged(activePosition, event);
+        }
+
+        if(event.isPlaying()) {
+            adapter.notifyItemChanged(activePosition, event);
         }
     }
 
@@ -148,6 +219,8 @@ public class MainActivity extends AppCompatActivity {
             Intent broadCastIntent = new Intent(Broadcast_PLAY_NEW_AUDIO);
             sendBroadcast(broadCastIntent);
         }
+
+        lastPlayedAudioIndex = audioIndex;
 
     }
 

@@ -21,6 +21,7 @@ public class AudioTouchListener implements RecyclerView.OnItemTouchListener {
             public boolean onSingleTapUp(MotionEvent e) {
                 return true;
             }
+
         });
     }
 
@@ -29,7 +30,7 @@ public class AudioTouchListener implements RecyclerView.OnItemTouchListener {
         View child = rv.findChildViewUnder(e.getX(), e.getY());
 
         if (child != null && onItemClickListener != null && gestureDetector.onTouchEvent(e)) {
-            onItemClickListener.onClick(child, rv.getChildLayoutPosition(child));
+            onItemClickListener.onClick(child, rv.getChildLayoutPosition(child), rv);
         }
 
         return false;
@@ -46,6 +47,6 @@ public class AudioTouchListener implements RecyclerView.OnItemTouchListener {
     }
 
     public interface onItemClickListener {
-        public void onClick(View view, int position);
+        public void onClick(View view, int position, RecyclerView rv);
     }
 }

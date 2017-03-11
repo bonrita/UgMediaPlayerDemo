@@ -14,10 +14,12 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class MediaPlayerService extends Service implements MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener {
+public class MediaPlayerService extends Service implements MediaPlayer.OnCompletionListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnSeekCompleteListener{
 
     // The binder to be given to clients.
     private final IBinder iBinder = new MediaPlayerBinder();
@@ -148,6 +150,9 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
                 if (audioIndex != -1 && audioIndex < audioList.size() && currentPlayingAudioIndex == audioIndex && !audioPaused) {
                     Toast.makeText(getApplicationContext(), "BROADCAST Pause audio", Toast.LENGTH_SHORT).show();
+                    AudioTrackingEvent audioTrackingEvent = new AudioTrackingEvent();
+                    audioTrackingEvent.setPaused(true);
+                    EventBus.getDefault().post(audioTrackingEvent);
                     pauseAudio();
                 } else {
                     audioPaused = false;
@@ -166,8 +171,12 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
                     stopCurrentAudioPlay();
                     mediaPlayer.reset();
                     Toast.makeText(getApplicationContext(), "BROADCAST Play audio", Toast.LENGTH_SHORT).show();
+                    AudioTrackingEvent audioTrackingEvent = new AudioTrackingEvent();
+                    audioTrackingEvent.setPlaying(true);
+                    EventBus.getDefault().post(audioTrackingEvent);
                     initMediaPlayer();
-                    Log.d("====>>> Function called", "BroadcastReceiver: onReceiver : initMediaPlayer");
+
+                    Log.d("====>>> Function called", "BroadcastReceiver: onReceiver : initMediaPlayer index:"+Integer.toString(audioIndex));
                 }
             }
         }
@@ -189,6 +198,8 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     @Override
     public void onCompletion(MediaPlayer mp) {
+        Toast.makeText(getApplicationContext(), "On completion in service: "+Integer.toString(audioIndex), Toast.LENGTH_SHORT).show();
+
         // Make sure the current audio that is playing is completely stopped form playing.
         stopCurrentAudioPlay();
 
@@ -198,6 +209,7 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
 
     @Override
     public void onPrepared(MediaPlayer mp) {
+        Toast.makeText(getApplicationContext(), "On prepared in service: "+Integer.toString(audioIndex), Toast.LENGTH_SHORT).show();
         // This is invoked when the media source is ready for playback
         playAudio();
     }
@@ -206,6 +218,11 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
         if (!mediaPlayer.isPlaying()) {
             mediaPlayer.start();
         }
+    }
+
+    @Override
+    public void onSeekComplete(MediaPlayer mp) {
+        Toast.makeText(getApplicationContext(), "On seek audio: "+Integer.toString(audioIndex), Toast.LENGTH_SHORT).show();
     }
 
     public class MediaPlayerBinder extends Binder {

@@ -35,6 +35,28 @@ public class MediaRecyclerViewAdapter extends RecyclerView.Adapter<MediaRecycler
     }
 
     @Override
+    public void onBindViewHolder(MediaViewHolder holder, int position, List<Object> payloads) {
+        if (!payloads.isEmpty()) {
+            if (payloads.get(0) instanceof AudioTrackingEvent) {
+                AudioTrackingEvent audioTrackingEvent = (AudioTrackingEvent) payloads.get(0);
+                if (audioTrackingEvent.isStopped()) {
+                    holder.play_pause.setImageResource(R.drawable.ic_play_black_48dp);
+                    holder.title.setText(audioList.get(position).getTitle() + " (stopped)");
+                } else if(audioTrackingEvent.isPlaying()) {
+                    holder.title.setText(audioList.get(position).getTitle()+ " (playing)");
+                    holder.play_pause.setImageResource(R.drawable.ic_play_black_48dp);
+                } else if(audioTrackingEvent.isPaused()) {
+                    holder.title.setText(audioList.get(position).getTitle()+ " (paused)");
+                    holder.play_pause.setImageResource(R.drawable.ic_pause);
+                }
+            }
+
+        } else {
+            super.onBindViewHolder(holder, position, payloads);
+        }
+    }
+
+    @Override
     public int getItemCount() {
         return audioList.size();
     }
