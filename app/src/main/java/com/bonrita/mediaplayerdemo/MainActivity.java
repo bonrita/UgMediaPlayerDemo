@@ -8,6 +8,7 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PersistableBundle;
+import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -15,6 +16,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -53,12 +55,13 @@ public class MainActivity extends AppCompatActivity {
 
     private int activePosition;
 
-    private boolean paused = false;
     private int lastPlayedAudioIndex = -1;
 
-    MediaRecyclerViewAdapter.MediaViewHolder viewHolder;
-
     private MediaRecyclerViewAdapter adapter;
+
+    private BottomSheetBehavior bottomSheetBehavior;
+
+    private boolean isPlaying;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +73,11 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         activePosition = -1;
+        isPlaying = false;
+
+        // Bottom sheet behaviour initialize.
+        View bottomSheet = findViewById(R.id.bottom_sheet);
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
 
         // Load mock data.
         loadMockData();
@@ -124,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view, int position, RecyclerView rv) {
 
+
                     // Store current position.
                     activePosition = position;
 
@@ -132,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
                         AudioTrackingEvent audioTrackingEvent = new AudioTrackingEvent();
                         audioTrackingEvent.setStop(true);
                         adapter.notifyItemChanged(lastPlayedAudioIndex, audioTrackingEvent);
-                        Toast.makeText(getApplicationContext(), "Last played audio index: " + Integer.toString(lastPlayedAudioIndex), Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(getApplicationContext(), "Last played audio index: " + Integer.toString(lastPlayedAudioIndex), Toast.LENGTH_SHORT).show();
                     }
                     AudioTrackingEvent audioTrackingEvent = new AudioTrackingEvent();
                     audioTrackingEvent.setPlaying(true);
@@ -140,6 +149,9 @@ public class MainActivity extends AppCompatActivity {
 
                     playAudio(position);
 
+                    // The bottomsheet is called here so as to initialize it.
+                    // It is done on purpose otherwise it won't show.
+                    updateAndControlBottomsheet();
 
                 }
             }));
@@ -147,16 +159,38 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Update bottom sheet with data from the current song.
+     */
+    protected void updateAndControlBottomsheet() {
+        if (bottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
+            TextView bottomsheetTitle = (TextView) findViewById(R.id.text_1);
+            bottomsheetTitle.setText(audioList.get(activePosition).getTitle());
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        }
+    }
+
     // This method will be called when a song is paused.
     @Subscribe
     public void onAudioTracking(AudioTrackingEvent event) {
+
         Toast.makeText(getApplicationContext(), "Audio tracking event received " + Integer.toString(activePosition), Toast.LENGTH_SHORT).show();
         if (event.isPaused()) {
+            isPlaying = false;
             adapter.notifyItemChanged(activePosition, event);
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         }
 
         if (event.isPlaying()) {
+
             adapter.notifyItemChanged(activePosition, event);
+
+            // Add song data to the bottom sheet.
+            // The bottom sheet behaviour is repeated in this method on purpose.
+            // It solves a behaviour of the bottom sheet to show at the right audio events.
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            updateAndControlBottomsheet();
+
         }
     }
 
