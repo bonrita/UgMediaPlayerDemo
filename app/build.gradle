@@ -39,4 +39,7 @@ dependencies {
     // http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.greenrobot%22%20AND%20a%3A%22eventbus%22
     compile 'org.greenrobot:eventbus:3.0.0'
 
+    // http://square.github.io/picasso/
+    compile 'com.squareup.picasso:picasso:2.5.2'
+
 }

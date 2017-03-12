@@ -16,6 +16,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,6 +27,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.squareup.picasso.Picasso;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -132,7 +134,6 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view, int position, RecyclerView rv) {
 
-
                     // Store current position.
                     activePosition = position;
 
@@ -163,18 +164,32 @@ public class MainActivity extends AppCompatActivity {
      * Update bottom sheet with data from the current song.
      */
     protected void updateAndControlBottomsheet() {
+
         if (bottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
-            TextView bottomsheetTitle = (TextView) findViewById(R.id.text_1);
-            bottomsheetTitle.setText(audioList.get(activePosition).getTitle());
+
+//            Toast.makeText(this, "Should load picasso image " + Integer.toString(activePosition), Toast.LENGTH_SHORT).show();
+            // And art cover icon.
+            ImageView artCover = (ImageView) findViewById(R.id.song_art_cover);
+            Picasso.with(this).load(audioList.get(activePosition).getImageUrl()).placeholder(R.drawable.music_world).into(artCover);
+
+
+            // Add song title.
+            TextView songTitle = (TextView) findViewById(R.id.song_title);
+            songTitle.setText(audioList.get(activePosition).getTitle());
+
+            // Add song author
+            TextView songAuthor = (TextView) findViewById(R.id.song_author);
+            songAuthor.setText(audioList.get(activePosition).getAuthor());
+
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
         }
     }
 
-    // This method will be called when a song is paused.
+    // This method will receive events from the event bus.
     @Subscribe
     public void onAudioTracking(AudioTrackingEvent event) {
 
-        Toast.makeText(getApplicationContext(), "Audio tracking event received " + Integer.toString(activePosition), Toast.LENGTH_SHORT).show();
+//        Toast.makeText(getApplicationContext(), "Audio tracking event received " + Integer.toString(activePosition), Toast.LENGTH_SHORT).show();
         if (event.isPaused()) {
             isPlaying = false;
             adapter.notifyItemChanged(activePosition, event);
@@ -324,8 +339,9 @@ public class MainActivity extends AppCompatActivity {
                     String author = song.getString("author");
                     String title = song.getString("title");
                     String url = song.getString("url");
+                    String imgUrl = song.getString("img");
 
-                    Audio audio = new Audio(genre, album, author, title, url);
+                    Audio audio = new Audio(genre, album, author, title, url, imgUrl);
 
                     // Save to audioList.
                     audioList.add(audio);
