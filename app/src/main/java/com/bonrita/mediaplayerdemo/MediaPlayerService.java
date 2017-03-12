@@ -200,6 +200,13 @@ public class MediaPlayerService extends Service implements MediaPlayer.OnComplet
     public void onCompletion(MediaPlayer mp) {
         Toast.makeText(getApplicationContext(), "On completion in service: "+Integer.toString(audioIndex), Toast.LENGTH_SHORT).show();
 
+        // Broadcast completion.
+        AudioTrackingEvent audioTrackingEvent = new AudioTrackingEvent();
+        audioTrackingEvent.setCompleted(true);
+        EventBus.getDefault().post(audioTrackingEvent);
+
+        // Reset value of the current audio index so that the audio continues playing smoothly.
+        currentPlayingAudioIndex = -1;
         // Make sure the current audio that is playing is completely stopped form playing.
         stopCurrentAudioPlay();
 

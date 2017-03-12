@@ -48,6 +48,8 @@ public class MediaRecyclerViewAdapter extends RecyclerView.Adapter<MediaRecycler
                 } else if(audioTrackingEvent.isPaused()) {
                     holder.title.setText(audioList.get(position).getTitle()+ " (paused)");
                     holder.play_pause.setImageResource(R.drawable.ic_pause);
+                } else if(audioTrackingEvent.isCompleted()) {
+                    holder.title.setText(audioList.get(position).getTitle()+ " (completed)");
                 }
             }
 

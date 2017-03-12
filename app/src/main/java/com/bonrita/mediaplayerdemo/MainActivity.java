@@ -43,6 +43,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
+    // Sample mp3 to use.
+// http://www.stephaniequinn.com/samples.htm
+//    http://www.pacdv.com/sounds/ambience_sounds.html
 
     public static final String Broadcast_PLAY_NEW_AUDIO = "com.bonrita.mediaplayerdemo.PlayNewAudio";
 
@@ -192,6 +195,11 @@ public class MainActivity extends AppCompatActivity {
 //        Toast.makeText(getApplicationContext(), "Audio tracking event received " + Integer.toString(activePosition), Toast.LENGTH_SHORT).show();
         if (event.isPaused()) {
             isPlaying = false;
+            adapter.notifyItemChanged(activePosition, event);
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        }
+
+        if (event.isCompleted()) {
             adapter.notifyItemChanged(activePosition, event);
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         }

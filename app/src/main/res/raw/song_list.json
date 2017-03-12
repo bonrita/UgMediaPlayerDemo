@@ -10,6 +10,22 @@
       "img": "https://images.vexels.com/media/users/3/138940/isolated/lists/6666ae4aab7603df271dfc9f54d5e583-music-instrument-musician-silhouette.png"
     },
     {
+      "genre": "Ambience",
+      "album": "Sounds of nature",
+      "author": "Rain God",
+      "title": "Rain",
+      "url": "http://www.pacdv.com/sounds/ambience_sounds/rain_1.mp3",
+      "img": "https://i1.wallpaperscraft.com/image/rain_drops_splashes_heavy_rain_dullness_bad_weather_60638_300x300.jpg"
+    },
+    {
+      "genre": "Domestic",
+      "album": "Brushing",
+      "author": "Carpet",
+      "title": "Brushing carpet",
+      "url": "http://www.pacdv.com/sounds/domestic_sound_effects/brushing_carpet_1.wav",
+      "img": "http://i.ebayimg.com/images/g/yoQAAOSw8gVYB4MJ/s-l300.jpg"
+    },
+    {
       "genre": "Classics",
       "album": "Chamber music for strings",
       "author": "Beethoven",

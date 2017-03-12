@@ -6,6 +6,7 @@ public class AudioTrackingEvent {
     private boolean paused;
     private boolean stopped;
     private boolean playing;
+    private boolean completed;
 
     public AudioTrackingEvent() {
 
@@ -33,5 +34,13 @@ public class AudioTrackingEvent {
 
     public void setPlaying(boolean playing) {
         this.playing = playing;
+    }
+
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
     }
 }
