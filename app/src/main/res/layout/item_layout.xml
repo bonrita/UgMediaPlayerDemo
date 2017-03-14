@@ -35,7 +35,7 @@ See: https://developer.android.com/training/improving-layouts/optimizing-layout.
             android:layout_height="wrap_content"
             android:text="Title"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="@color/primary_text"
+            android:textColor="@color/primaryText"
             android:layout_gravity="center_vertical"
             android:foregroundGravity="center_horizontal"
             />

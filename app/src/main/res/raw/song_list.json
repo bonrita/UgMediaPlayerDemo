@@ -2,14 +2,6 @@
   "statusCode": 200,
   "data": [
     {
-      "genre": "Classics",
-      "album": "Chamber music for strings",
-      "author": "Beethoven",
-      "title": "Adagio",
-      "url": "http://www.scientificinvesting.eu/a/Beethoven%20-%20Trio%20for%20strings%20n.1%20Op.9%20in%20G%20-%201%20Adagio.mp3",
-      "img": "https://images.vexels.com/media/users/3/138940/isolated/lists/6666ae4aab7603df271dfc9f54d5e583-music-instrument-musician-silhouette.png"
-    },
-    {
       "genre": "Ambience",
       "album": "Sounds of nature",
       "author": "Rain God",
@@ -24,6 +16,14 @@
       "title": "Brushing carpet",
       "url": "http://www.pacdv.com/sounds/domestic_sound_effects/brushing_carpet_1.wav",
       "img": "http://i.ebayimg.com/images/g/yoQAAOSw8gVYB4MJ/s-l300.jpg"
+    },
+    {
+      "genre": "Classics",
+      "album": "Chamber music for strings",
+      "author": "Beethoven",
+      "title": "Adagio",
+      "url": "http://www.scientificinvesting.eu/a/Beethoven%20-%20Trio%20for%20strings%20n.1%20Op.9%20in%20G%20-%201%20Adagio.mp3",
+      "img": "https://images.vexels.com/media/users/3/138940/isolated/lists/6666ae4aab7603df271dfc9f54d5e583-music-instrument-musician-silhouette.png"
     },
     {
       "genre": "Classics",

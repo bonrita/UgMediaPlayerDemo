@@ -7,6 +7,7 @@ public class AudioTrackingEvent {
     private boolean stopped;
     private boolean playing;
     private boolean completed;
+    private  boolean continueForwardForever;
 
     public AudioTrackingEvent() {
 
@@ -42,5 +43,13 @@ public class AudioTrackingEvent {
 
     public void setCompleted(boolean completed) {
         this.completed = completed;
+    }
+
+    public boolean isContinueForwardForever() {
+        return continueForwardForever;
+    }
+
+    public void setContinueForwardForever(boolean continueForwardForever) {
+        this.continueForwardForever = continueForwardForever;
     }
 }

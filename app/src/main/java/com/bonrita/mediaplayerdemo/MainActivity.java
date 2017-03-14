@@ -16,9 +16,9 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -66,7 +66,13 @@ public class MainActivity extends AppCompatActivity {
 
     private BottomSheetBehavior bottomSheetBehavior;
 
-    private boolean isPlaying;
+    private boolean isPlaying = false;
+
+    // Buttons and properties to forward or reverse the list.
+    private boolean continueForwardForever = false;
+    private ImageButton forwardForever;
+    private boolean continueBackwardForever = false;
+    private ImageButton backwardForever;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +84,6 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         activePosition = -1;
-        isPlaying = false;
 
         // Bottom sheet behaviour initialize.
         View bottomSheet = findViewById(R.id.bottom_sheet);
@@ -92,13 +97,60 @@ public class MainActivity extends AppCompatActivity {
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(fabOnclickListener);
 
+        // Initialize the Continue playing the list forward forever button.
+        forwardForever = (ImageButton) findViewById(R.id.song_list_forward_forever);
+        forwardForever.setOnClickListener(forwardForeverOnclickListener);
+
+        // Initialize the Continue playing the list forward forever button.
+        backwardForever = (ImageButton) findViewById(R.id.song_list_back_forever);
+        backwardForever.setOnClickListener(backwardForeverOnclickListener);
 
     }
 
     View.OnClickListener fabOnclickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Toast.makeText(getApplicationContext(), "Fab btn clicked", Toast.LENGTH_LONG).show();
+//            Toast.makeText(getApplicationContext(), "Fab btn clicked", Toast.LENGTH_LONG).show();
+        }
+    };
+
+    View.OnClickListener backwardForeverOnclickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            // Reset the forward button.
+            continueForwardForever = false;
+            forwardForever.setImageResource(R.drawable.double_down_24_ff4081);
+
+            // Reverse music if necessary.
+            if (continueBackwardForever) {
+                // Turn off forever.
+                continueBackwardForever = false;
+                backwardForever.setImageResource(R.drawable.double_up_24_ff4081);
+            } else {
+                // Let the list go forward till it reaches the end.
+                continueBackwardForever = true;
+                backwardForever.setImageResource(R.drawable.double_up_24);
+            }
+        }
+    };
+
+    View.OnClickListener forwardForeverOnclickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            // Reset the backward button.
+            backwardForever.setImageResource(R.drawable.double_up_24_ff4081);
+            continueBackwardForever = false;
+
+            // Forward the music if necessary.
+            if (continueForwardForever) {
+                // Turn off forever.
+                continueForwardForever = false;
+                forwardForever.setImageResource(R.drawable.double_down_24_ff4081);
+            } else {
+                // Let the list go forward till it reaches the end.
+                continueForwardForever = true;
+                forwardForever.setImageResource(R.drawable.double_down_24);
+            }
         }
     };
 
@@ -167,7 +219,6 @@ public class MainActivity extends AppCompatActivity {
      * Update bottom sheet with data from the current song.
      */
     protected void updateAndControlBottomsheet() {
-
         if (bottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
 
 //            Toast.makeText(this, "Should load picasso image " + Integer.toString(activePosition), Toast.LENGTH_SHORT).show();
@@ -202,6 +253,52 @@ public class MainActivity extends AppCompatActivity {
         if (event.isCompleted()) {
             adapter.notifyItemChanged(activePosition, event);
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+
+            // Forward the list till the end of it.
+            if (continueForwardForever) {
+                int newIndex = activePosition + 1;
+
+                if (newIndex > audioList.size()) {
+                    // We have reached the end of the list. Reset the buttons.
+                    activePosition = -1;
+                    continueForwardForever = false;
+                    forwardForever.setImageResource(R.drawable.double_down_24_ff4081);
+                } else {
+                    // Continue playing to the next index.
+                    activePosition = newIndex;
+                    AudioTrackingEvent audioTrackingEvent = new AudioTrackingEvent();
+                    audioTrackingEvent.setPlaying(true);
+                    adapter.notifyItemChanged(newIndex, audioTrackingEvent);
+
+                    playAudio(newIndex);
+
+                    // The bottomsheet is called here so as to initialize it.
+                    // It is done on purpose otherwise it won't show.
+                    updateAndControlBottomsheet();
+                }
+            }
+
+            // Reverse the list backwards till the start of the song.
+            if (continueBackwardForever) {
+                int newIndex = activePosition - 1;
+                if (newIndex < 0 ) {
+                    // We have reached the end of the list. Reset the buttons.
+                    activePosition = -1;
+                    continueBackwardForever = false;
+                    backwardForever.setImageResource(R.drawable.double_up_24_ff4081);
+                } else {
+                    activePosition = newIndex;
+
+                    AudioTrackingEvent audioTrackingEvent = new AudioTrackingEvent();
+                    audioTrackingEvent.setPlaying(true);
+                    adapter.notifyItemChanged(newIndex, audioTrackingEvent);
+                    playAudio(newIndex);
+
+                    // The bottomsheet is called here so as to initialize it.
+                    // It is done on purpose otherwise it won't show.
+                    updateAndControlBottomsheet();
+                }
+            }
         }
 
         if (event.isPlaying()) {

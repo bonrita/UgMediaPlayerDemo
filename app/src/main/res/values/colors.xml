@@ -4,6 +4,6 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="icons">#ffefef</color>
-    <color name="primary_text">#00544b</color>
+    <color name="primaryText">#000000</color>
     <color name="song_author">#ecd5d5</color>
 </resources>
