@@ -70,9 +70,13 @@ public class MainActivity extends AppCompatActivity {
 
     // Buttons and properties to forward or reverse the list.
     private boolean continueForwardForever = false;
-    private ImageButton forwardForever;
+    private ImageButton forwardForeverBtn;
     private boolean continueBackwardForever = false;
-    private ImageButton backwardForever;
+    private ImageButton backwardForeverBtn;
+
+    // Button to repeat song list or a song.
+    private ImageButton repeatBtn;
+    private boolean repeatOn = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,12 +102,16 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(fabOnclickListener);
 
         // Initialize the Continue playing the list forward forever button.
-        forwardForever = (ImageButton) findViewById(R.id.song_list_forward_forever);
-        forwardForever.setOnClickListener(forwardForeverOnclickListener);
+        forwardForeverBtn = (ImageButton) findViewById(R.id.song_list_forward_forever);
+        forwardForeverBtn.setOnClickListener(forwardForeverOnclickListener);
 
         // Initialize the Continue playing the list forward forever button.
-        backwardForever = (ImageButton) findViewById(R.id.song_list_back_forever);
-        backwardForever.setOnClickListener(backwardForeverOnclickListener);
+        backwardForeverBtn = (ImageButton) findViewById(R.id.song_list_back_forever);
+        backwardForeverBtn.setOnClickListener(backwardForeverOnclickListener);
+
+        // Initialize repeat button.
+        repeatBtn = (ImageButton) findViewById(R.id.song_list_loop);
+        repeatBtn.setOnClickListener(repeatSongOnclickListener);
 
     }
 
@@ -113,22 +121,39 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    View.OnClickListener repeatSongOnclickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+
+            // Reverse music if necessary.
+            if (repeatOn) {
+                // Turn off repeat.
+                repeatOn = false;
+                repeatBtn.setImageResource(R.drawable.repeat_24_ff4081);
+            } else {
+                // Let the list or song repeat.
+                repeatOn = true;
+                repeatBtn.setImageResource(R.drawable.repeat_24);
+            }
+        }
+    };
+
     View.OnClickListener backwardForeverOnclickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             // Reset the forward button.
             continueForwardForever = false;
-            forwardForever.setImageResource(R.drawable.double_down_24_ff4081);
+            forwardForeverBtn.setImageResource(R.drawable.double_down_24_ff4081);
 
             // Reverse music if necessary.
             if (continueBackwardForever) {
                 // Turn off forever.
                 continueBackwardForever = false;
-                backwardForever.setImageResource(R.drawable.double_up_24_ff4081);
+                backwardForeverBtn.setImageResource(R.drawable.double_up_24_ff4081);
             } else {
                 // Let the list go forward till it reaches the end.
                 continueBackwardForever = true;
-                backwardForever.setImageResource(R.drawable.double_up_24);
+                backwardForeverBtn.setImageResource(R.drawable.double_up_24);
             }
         }
     };
@@ -137,18 +162,18 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             // Reset the backward button.
-            backwardForever.setImageResource(R.drawable.double_up_24_ff4081);
+            backwardForeverBtn.setImageResource(R.drawable.double_up_24_ff4081);
             continueBackwardForever = false;
 
             // Forward the music if necessary.
             if (continueForwardForever) {
                 // Turn off forever.
                 continueForwardForever = false;
-                forwardForever.setImageResource(R.drawable.double_down_24_ff4081);
+                forwardForeverBtn.setImageResource(R.drawable.double_down_24_ff4081);
             } else {
                 // Let the list go forward till it reaches the end.
                 continueForwardForever = true;
-                forwardForever.setImageResource(R.drawable.double_down_24);
+                forwardForeverBtn.setImageResource(R.drawable.double_down_24);
             }
         }
     };
@@ -253,6 +278,14 @@ public class MainActivity extends AppCompatActivity {
             adapter.notifyItemChanged(activePosition, event);
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
 
+            // Repeat the current song indefinitely.
+            if (repeatOn && !continueForwardForever && !continueBackwardForever) {
+                AudioTrackingEvent audioTrackingEvent = new AudioTrackingEvent();
+                audioTrackingEvent.setPlaying(true);
+                adapter.notifyItemChanged(activePosition, audioTrackingEvent);
+                playAudio(activePosition);
+            }
+
             // Forward the list till the end of it.
             PlayTheAudioListFoward();
 
@@ -280,29 +313,43 @@ public class MainActivity extends AppCompatActivity {
     protected void PlayTheAudioListBackward() {
         if (continueBackwardForever) {
             int newIndex = activePosition - 1;
-            if (newIndex < 0 ) {
-                // We have reached the end of the list. Reset the buttons.
-                activePosition = -1;
-                continueBackwardForever = false;
-                backwardForever.setImageResource(R.drawable.double_up_24_ff4081);
+            if (newIndex < 0) {
+                if (repeatOn) {
+                    // Last key is total minus one.
+                    activePosition = audioList.size() - 1;
+                    bottomSheetPlayAudioHelper(activePosition);
+                } else {
+                    // We have reached the end of the list. Reset the buttons.
+                    activePosition = -1;
+                    continueBackwardForever = false;
+                    backwardForeverBtn.setImageResource(R.drawable.double_up_24_ff4081);
+                }
+
             } else {
                 activePosition = newIndex;
-
-                AudioTrackingEvent audioTrackingEvent = new AudioTrackingEvent();
-                audioTrackingEvent.setPlaying(true);
-                adapter.notifyItemChanged(newIndex, audioTrackingEvent);
-                playAudio(newIndex);
-
-                // The bottomsheet is called here so as to initialize it.
-                // It is done on purpose otherwise it won't show.
-                updateAndControlBottomsheet();
+                bottomSheetPlayAudioHelper(newIndex);
             }
         }
     }
 
     /**
-     * Play the playlist / audio list forward.
+     * Play audio.
      *
+     * @param index
+     */
+    private void bottomSheetPlayAudioHelper(int index) {
+        AudioTrackingEvent audioTrackingEvent = new AudioTrackingEvent();
+        audioTrackingEvent.setPlaying(true);
+        adapter.notifyItemChanged(index, audioTrackingEvent);
+        playAudio(index);
+        // The bottomsheet is called here so as to initialize it.
+        // It is done on purpose otherwise it won't show.
+        updateAndControlBottomsheet();
+    }
+
+    /**
+     * Play the playlist / audio list forward.
+     * <p>
      * Forward the list till the end of it.
      */
     protected void PlayTheAudioListFoward() {
@@ -313,19 +360,11 @@ public class MainActivity extends AppCompatActivity {
                 // We have reached the end of the list. Reset the buttons.
                 activePosition = -1;
                 continueForwardForever = false;
-                forwardForever.setImageResource(R.drawable.double_down_24_ff4081);
+                forwardForeverBtn.setImageResource(R.drawable.double_down_24_ff4081);
             } else {
                 // Continue playing to the next index.
                 activePosition = newIndex;
-                AudioTrackingEvent audioTrackingEvent = new AudioTrackingEvent();
-                audioTrackingEvent.setPlaying(true);
-                adapter.notifyItemChanged(newIndex, audioTrackingEvent);
-
-                playAudio(newIndex);
-
-                // The bottomsheet is called here so as to initialize it.
-                // It is done on purpose otherwise it won't show.
-                updateAndControlBottomsheet();
+                bottomSheetPlayAudioHelper(newIndex);
             }
         }
     }
