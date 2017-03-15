@@ -78,6 +78,11 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton repeatBtn;
     private boolean repeatOn = false;
 
+    // Button next song.
+    private ImageButton nextSongBtn;
+    private ImageButton previousSongBtn;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -113,9 +118,32 @@ public class MainActivity extends AppCompatActivity {
         repeatBtn = (ImageButton) findViewById(R.id.song_list_loop);
         repeatBtn.setOnClickListener(repeatSongOnclickListener);
 
+        // Initialize next and previous song button.
+        nextSongBtn = (ImageButton) findViewById(R.id.song_list_next);
+        nextSongBtn.setOnClickListener(nextSongOnclickListener);
+
+        previousSongBtn = (ImageButton) findViewById(R.id.song_list_previous);
+        previousSongBtn.setOnClickListener(previousSongOnclickListener);
+
     }
 
     View.OnClickListener fabOnclickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+
+        }
+    };
+
+    View.OnClickListener nextSongOnclickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (isPlaying) {
+
+            }
+        }
+    };
+
+    View.OnClickListener previousSongOnclickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
         }
@@ -275,6 +303,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (event.isCompleted()) {
+            isPlaying = false;
             adapter.notifyItemChanged(activePosition, event);
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
 
@@ -307,7 +336,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Play the playlist / audio list backward.
-     *
+     * <p>
      * Reverse the list backwards till the start of the list.
      */
     protected void PlayTheAudioListBackward() {
@@ -413,6 +442,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         lastPlayedAudioIndex = audioIndex;
+        isPlaying = true;
 
     }
 

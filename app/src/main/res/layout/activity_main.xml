@@ -117,7 +117,7 @@
             android:orientation="horizontal">
 
             <ImageButton
-                android:id="@+id/song_list_rewind"
+                android:id="@+id/song_list_previous"
                 android:layout_width="50dp"
                 android:layout_height="match_parent"
                 android:layout_gravity="start"
@@ -127,20 +127,17 @@
 
             <ImageButton
                 android:id="@+id/song_play_pause"
-                android:layout_width="50dp"
+                android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_gravity="center_horizontal"
-                android:src="@drawable/ic_pause"
-                android:tint="@color/colorPrimary" />
-
-
+                android:src="@drawable/pause_20" />
+<!--@drawable/end_filled_20-->
             <ImageButton
-                android:id="@+id/song_list_forward"
-                android:layout_width="50dp"
+                android:id="@+id/song_list_next"
+                android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_gravity="end"
-                android:src="@drawable/ic_skip_next"
-                android:tint="@color/colorAccent" />
+                android:src="@drawable/end_filled_20_ff4081" />
 
             <ImageButton
                 android:id="@+id/song_list_loop"
