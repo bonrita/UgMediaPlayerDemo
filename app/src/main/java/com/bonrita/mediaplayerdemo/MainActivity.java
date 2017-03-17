@@ -138,6 +138,28 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             if (isPlaying) {
+                boolean playNext = false;
+                int newIndex = activePosition + 1;
+
+
+                AudioTrackingEvent audioTrackingEvent = new AudioTrackingEvent();
+                audioTrackingEvent.setStop(true);
+                adapter.notifyItemChanged(activePosition, audioTrackingEvent);
+
+                if (newIndex < audioList.size()) {
+                    activePosition = newIndex;
+                    playNext = true;
+                } else if (repeatOn) {
+                    activePosition = 0;
+                    playNext = true;
+                }
+
+                if (playNext) {
+                      audioTrackingEvent = new AudioTrackingEvent();
+                    audioTrackingEvent.setPlaying(true);
+                    adapter.notifyItemChanged(activePosition, audioTrackingEvent);
+                    playAudio(activePosition);
+                }
 
             }
         }
@@ -146,6 +168,20 @@ public class MainActivity extends AppCompatActivity {
     View.OnClickListener previousSongOnclickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            boolean playPrevious = false;
+            int newIndex = activePosition - 1;
+
+            if (newIndex < 0 && repeatOn) {
+                activePosition = audioList.size() - 1;
+                playPrevious = true;
+            } else if (newIndex > -1) {
+                activePosition = newIndex;
+                playPrevious = true;
+            }
+
+            if (playPrevious) {
+                playAudio(activePosition);
+            }
         }
     };
 
