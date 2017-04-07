@@ -141,7 +141,6 @@ public class MainActivity extends AppCompatActivity {
                 boolean playNext = false;
                 int newIndex = activePosition + 1;
 
-
                 AudioTrackingEvent audioTrackingEvent = new AudioTrackingEvent();
                 audioTrackingEvent.setStop(true);
                 adapter.notifyItemChanged(activePosition, audioTrackingEvent);
@@ -149,13 +148,16 @@ public class MainActivity extends AppCompatActivity {
                 if (newIndex < audioList.size()) {
                     activePosition = newIndex;
                     playNext = true;
+                } else if (newIndex > (audioList.size() - 1)) {
+                    activePosition = 0;
+                    playNext = true;
                 } else if (repeatOn) {
                     activePosition = 0;
                     playNext = true;
                 }
 
                 if (playNext) {
-                      audioTrackingEvent = new AudioTrackingEvent();
+                    audioTrackingEvent = new AudioTrackingEvent();
                     audioTrackingEvent.setPlaying(true);
                     adapter.notifyItemChanged(activePosition, audioTrackingEvent);
                     playAudio(activePosition);
@@ -168,19 +170,28 @@ public class MainActivity extends AppCompatActivity {
     View.OnClickListener previousSongOnclickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            boolean playPrevious = false;
-            int newIndex = activePosition - 1;
+            if (isPlaying) {
+                boolean playPrevious = false;
+                int newIndex = activePosition - 1;
 
-            if (newIndex < 0 && repeatOn) {
-                activePosition = audioList.size() - 1;
-                playPrevious = true;
-            } else if (newIndex > -1) {
-                activePosition = newIndex;
-                playPrevious = true;
-            }
+                AudioTrackingEvent audioTrackingEvent = new AudioTrackingEvent();
+                audioTrackingEvent.setStop(true);
+                adapter.notifyItemChanged(activePosition, audioTrackingEvent);
 
-            if (playPrevious) {
-                playAudio(activePosition);
+                if (newIndex < 0 && repeatOn) {
+                    activePosition = audioList.size() - 1;
+                    playPrevious = true;
+                } else if (newIndex < 0) {
+                    activePosition = audioList.size() - 1;
+                    playPrevious = true;
+                }
+
+                if (playPrevious) {
+                    audioTrackingEvent = new AudioTrackingEvent();
+                    audioTrackingEvent.setPlaying(true);
+                    adapter.notifyItemChanged(activePosition, audioTrackingEvent);
+                    playAudio(activePosition);
+                }
             }
         }
     };
@@ -421,11 +432,18 @@ public class MainActivity extends AppCompatActivity {
         if (continueForwardForever) {
             int newIndex = activePosition + 1;
 
-            if (newIndex > audioList.size()) {
-                // We have reached the end of the list. Reset the buttons.
-                activePosition = -1;
-                continueForwardForever = false;
-                forwardForeverBtn.setImageResource(R.drawable.double_down_24_ff4081);
+            if (newIndex > (audioList.size() - 1)) {
+                if (repeatOn) {
+                    // Continue playing to the next index.
+                    activePosition = 0;
+                    bottomSheetPlayAudioHelper(0);
+                } else {
+                    // We have reached the end of the list. Reset the buttons.
+                    activePosition = -1;
+                    continueForwardForever = false;
+                    forwardForeverBtn.setImageResource(R.drawable.double_down_24_ff4081);
+                }
+
             } else {
                 // Continue playing to the next index.
                 activePosition = newIndex;
