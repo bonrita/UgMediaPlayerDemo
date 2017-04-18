@@ -19,6 +19,7 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -42,7 +43,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AbstractActivity {
     // Sample mp3 to use.
 // http://www.stephaniequinn.com/samples.htm
 //    http://www.pacdv.com/sounds/ambience_sounds.html
@@ -52,8 +53,6 @@ public class MainActivity extends AppCompatActivity {
     boolean serviceBound = false;
 
     private static final String SOURCE_URL = "http://10.0.2.2:8080/drupal8/api/v1/song_list?_format=json";
-
-    ArrayList<Audio> audioList;
 
     // Service player that houses all functionality to play music.
     private MediaPlayerService servicePlayer;
@@ -82,11 +81,15 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton nextSongBtn;
     private ImageButton previousSongBtn;
 
+//    public static Context context;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //final Context context = this;
 
         // Override the default actionbar so as i use the toolbar.
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -97,9 +100,6 @@ public class MainActivity extends AppCompatActivity {
         // Bottom sheet behaviour initialize.
         View bottomSheet = findViewById(R.id.bottom_sheet);
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
-
-        // Load mock data.
-        loadMockData();
 
         initRecyclerView();
 
@@ -184,6 +184,11 @@ public class MainActivity extends AppCompatActivity {
                 } else if (newIndex < 0) {
                     activePosition = audioList.size() - 1;
                     playPrevious = true;
+                } else if (newIndex > (audioList.size() - 1)) {
+                    activePosition = 0;
+                } else if (newIndex < (audioList.size() - 1)) {
+                    activePosition = newIndex;
+                    playPrevious = true;
                 }
 
                 if (playPrevious) {
@@ -250,6 +255,17 @@ public class MainActivity extends AppCompatActivity {
                 continueForwardForever = true;
                 forwardForeverBtn.setImageResource(R.drawable.double_down_24);
             }
+        }
+    };
+
+    View.OnClickListener artCoverOnclickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+
+            Toast.makeText(getApplicationContext(), "Art cover of song  " + Integer.toString(activePosition), Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(MainActivity.this, AudioDetailActivity.class);
+            intent.putExtra("current-index", activePosition);
+            startActivity(intent);
         }
     };
 
@@ -325,6 +341,8 @@ public class MainActivity extends AppCompatActivity {
             ImageView artCover = (ImageView) findViewById(R.id.song_art_cover);
             Picasso.with(this).load(audioList.get(activePosition).getImageUrl()).placeholder(R.drawable.music_world).into(artCover);
 
+            // Go to detail activity.
+            artCover.setOnClickListener(artCoverOnclickListener);
 
             // Add song title.
             TextView songTitle = (TextView) findViewById(R.id.song_title);
@@ -542,58 +560,6 @@ public class MainActivity extends AppCompatActivity {
         // Adding our request to the que
         requestQueue.add(jsonObjectRequest);
 
-    }
-
-    /**
-     * Get data from a text resource File that contains json data.
-     */
-    protected void loadMockData() {
-
-        int ctr;
-        InputStream inputStream = getResources().openRawResource(R.raw.song_list);
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-
-        try {
-            ctr = inputStream.read();
-            while (ctr != -1) {
-                byteArrayOutputStream.write(ctr);
-                ctr = inputStream.read();
-            }
-            inputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        // Parse the data.
-        try {
-            JSONObject jObject = new JSONObject(byteArrayOutputStream.toString());
-
-            String status_code = jObject.getString("statusCode");
-
-            if (status_code.equalsIgnoreCase("200")) {
-                JSONArray jArray = jObject.getJSONArray("data");
-
-                audioList = new ArrayList<>();
-
-                for (int i = 0; i < jArray.length(); i++) {
-                    JSONObject song = jArray.getJSONObject(i);
-
-                    String genre = song.getString("genre");
-                    String album = song.getString("album");
-                    String author = song.getString("author");
-                    String title = song.getString("title");
-                    String url = song.getString("url");
-                    String imgUrl = song.getString("img");
-
-                    Audio audio = new Audio(genre, album, author, title, url, imgUrl);
-
-                    // Save to audioList.
-                    audioList.add(audio);
-                }
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override

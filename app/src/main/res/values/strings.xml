@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">BRT Media Player</string>
+    <string name="title_activity_audio_detail">Audio Detail</string>
 </resources>
