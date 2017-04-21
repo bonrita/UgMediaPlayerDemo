@@ -56,8 +56,8 @@ public class MainActivity extends AbstractActivity {
 
     // Service player that houses all functionality to play music.
     private MediaPlayerService servicePlayer;
-
-    private int activePosition;
+//
+//    private int activePosition;
 
     private int lastPlayedAudioIndex = -1;
 
@@ -94,8 +94,8 @@ public class MainActivity extends AbstractActivity {
         // Override the default actionbar so as i use the toolbar.
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        activePosition = -1;
+//
+//        activePosition = -1;
 
         // Bottom sheet behaviour initialize.
         View bottomSheet = findViewById(R.id.bottom_sheet);

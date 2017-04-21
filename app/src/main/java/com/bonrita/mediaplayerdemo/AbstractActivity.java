@@ -16,10 +16,13 @@ import java.util.ArrayList;
 abstract public class AbstractActivity extends AppCompatActivity {
 
     ArrayList<Audio> audioList;
+    protected int activePosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        activePosition = -1;
         // Load mock data.
         loadMockData();
     }

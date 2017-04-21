@@ -6,8 +6,12 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 
-public class AudioDetailActivity extends AppCompatActivity {
+import com.squareup.picasso.Picasso;
+
+public class AudioDetailActivity extends AbstractActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,6 +28,24 @@ public class AudioDetailActivity extends AppCompatActivity {
 //                        .setAction("Action", null).show();
 //            }
 //        });
+
+        Bundle extras = getIntent().getExtras();
+
+        if(extras != null) {
+            activePosition = (int)extras.get("current-index");
+            // And art cover.
+            ImageView artCover = (ImageView) findViewById(R.id.song_art_cover);
+            Picasso.with(this).load(audioList.get(activePosition).getImageUrl()).placeholder(R.drawable.music_world).into(artCover);
+
+            // Add song title.
+            TextView songTitle = (TextView) findViewById(R.id.song_title);
+            songTitle.setText(audioList.get(activePosition).getTitle());
+
+            // Add song author
+            TextView songAuthor = (TextView) findViewById(R.id.song_author);
+            songAuthor.setText(audioList.get(activePosition).getAuthor());
+
+        }
     }
 
 }
